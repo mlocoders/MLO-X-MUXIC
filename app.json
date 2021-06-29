@@ -1,9 +1,9 @@
 {
-  "name": "DaisyXMusic",
-  "logo": "https://telegra.ph/file/36ff1b571aa11df5812de.jpg",
-  "description": "Open-Source bot to play songs in your Telegram's Group Voice Chat. Powered by PyTgCalls.",
+  "name": "MLO-X-MUSIC",
+  "logo": "https://telegra.ph/file/4af6663607126037d8ca8.jpg",
+  "description": "A MUSIC BOT FOR MLO COMMUNITY .",
   "keywords": ["music", "voicechat", "telegram"],
-  "repository": "https://github.com/TeamofDaisyX/DaisyXMusic",
+  "repository": "https://github.com/mlocoders/MLO-X-MUXIC",
   "stack": "container",
   "buildpacks": [
    {
@@ -34,12 +34,12 @@
     "SUPPORT_GROUP": {
       "description": "Your MusicPlayer support group without @ [Leave this if you don't have one]",
       "required": false,
-      "value": "DaisySupport_Official"
+      "value": "PYTHON_PIRATES"
     },
     "PROJECT_NAME": {
       "description": "Your MusicPlayer project Name.",
       "required": false,
-      "value": "DaisyXMusic v5"
+      "value": "MLO-X-MUSIC"
     },
     "ASSISTANT_NAME": {
       "description": "Your MusicPlayer's assistant Username without @.",
@@ -53,12 +53,12 @@
     "BG_IMAGE": {
       "description": "BG image of bot (Use transparent one) [IGNORE].",
       "required": false,
-      "value": " https://telegra.ph/file/dcfdf612e499eef0e0b1f.png"
+      "value": " https://telegra.ph/file/9969a7d7ebfaa77290bc8.jpg"
     },     
     "UPDATES_CHANNEL": {
       "description": "Updates Channel without @ [Leave this if you don't have one].",
       "required": false,
-      "value": "DaisyXupdates"
+      "value": "PYTHONPIRATES"
     },    
     "API_ID": {
       "description": "App ID from my.telegram.org/apps",
