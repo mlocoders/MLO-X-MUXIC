@@ -57,7 +57,7 @@ from DaisyXMusic.services.callsmusic import client as USER
 from DaisyXMusic.services.converter.converter import convert
 from DaisyXMusic.services.downloaders import youtube
 from DaisyXMusic.services.queues import queues
-
+from DaisyXMusic.services.sql.cleansql import update_previous_msg,rm_clean_setting,add_clean_setting,get_current_clean_settings
 aiohttpsession = aiohttp.ClientSession()
 chat_id = None
 arq = ARQ("https://thearq.tech", ARQ_API_KEY, aiohttpsession)
@@ -451,7 +451,7 @@ async def m_cb(b, cb):
         else:
             await cb.answer("Chat is not connected!", show_alert=True)
 
-
+    
 @Client.on_message(command("play") & other_filters)
 async def play(_, message: Message):
     global que
@@ -515,8 +515,11 @@ async def play(_, message: Message):
     text_links=None
     await lel.edit("🔎 <b>Finding</b>")
     if message.reply_to_message:
+        if message.reply_to_message.audio:
+            pass
         entities = []
-        toxt = message.reply_to_message.text or message.reply_to_message.caption
+        toxt = message.reply_to_message.text \
+              or message.reply_to_message.caption
         if message.reply_to_message.entities:
             entities = message.reply_to_message.entities + entities
         elif message.reply_to_message.caption_entities:
@@ -568,7 +571,7 @@ async def play(_, message: Message):
     elif urls:
         query = toxt
         await lel.edit("🎵 <b>Processing</b>")
-        ydl_opts = {"format": "bestaudio[ext=m4a]"}
+        ydl_opts = {"format": "bestaudio[ext=mp3]"}
         try:
             results = YoutubeSearch(query, max_results=1).to_dict()
             url = f"https://youtube.com{results[0]['url_suffix']}"
@@ -622,7 +625,7 @@ async def play(_, message: Message):
             query += " " + str(i)
         print(query)
         await lel.edit("🎵 **Processing**")
-        ydl_opts = {"format": "bestaudio[ext=m4a]"}
+        ydl_opts = {"format": "bestaudio[ext=mp3]"}
         
         try:
           results = YoutubeSearch(query, max_results=5).to_dict()
@@ -819,7 +822,7 @@ async def ytplay(_, message: Message):
         query += " " + str(i)
     print(query)
     await lel.edit("🎵 <b>Processing</b>")
-    ydl_opts = {"format": "bestaudio[ext=m4a]"}
+    ydl_opts = {"format": "bestaudio[ext=mp3]"}
     try:
         results = YoutubeSearch(query, max_results=1).to_dict()
         url = f"https://youtube.com{results[0]['url_suffix']}"
@@ -1191,7 +1194,7 @@ async def jiosaavn(client: Client, message_: Message):
 @Client.on_callback_query(filters.regex(pattern=r"plll"))
 async def lol_cb(b, cb):
     global que
-
+    cws = get_current_clean_settings(cb.message.chat.id)
     cbd = cb.data.strip()
     chat_id = cb.message.chat.id
     typed_=cbd.split(None, 1)[1]
@@ -1253,6 +1256,14 @@ async def lol_cb(b, cb):
         ]
     )
     requested_by = useer_name
+    if cws.should_clean:
+    # print ("2")
+        try:
+            await client.delete_messages(  # pylint:disable=E0602
+                chat_id, cws.previous_msg
+            )
+        except:  # pylint:disable=C0103,W0703
+            pass  # pylint:disable=E0602    
     await generate_cover(requested_by, title, views, duration, thumbnail)
     file_path = await convert(youtube.download(url))  
     if chat_id in callsmusic.active_chats:
@@ -1267,12 +1278,13 @@ async def lol_cb(b, cb):
         appendable = [s_name, r_by, loc]
         qeue.append(appendable)
         await cb.message.delete()
-        await b.send_photo(chat_id,
+        previous = await b.send_photo(chat_id,
             photo="final.png",
             caption=f"#⃣  Song requested by {r_by.mention} <b>queued</b> at position {position}!",
             reply_markup=keyboard,
         )
         os.remove("final.png")
+
         
     else:
         que[chat_id] = []
@@ -1288,10 +1300,44 @@ async def lol_cb(b, cb):
     
         await callsmusic.set_stream(chat_id, file_path)
         await cb.message.delete()
-        await b.send_photo(chat_id,
+        previous = await b.send_photo(chat_id,
             photo="final.png",
             reply_markup=keyboard,
             caption=f"▶️ <b>Playing</b> here the song requested by {r_by.mention} via Youtube Music 😎",
         )
         
         os.remove("final.png")
+    update_previous_msg(chat_id, previous.id)
+
+
+
+@Client.on_message(filters.command("cleanmusic") & filters.group & ~filters.edited)
+async def _qq(client: Client, message: Message):
+    input = message.command[1]
+    cws = get_current_clean_settings(message.chat.id)
+    pvw = cws.previous_    
+    if pvw:
+        pass
+    else:
+        if input == "on": 
+            add_clean_setting(message.chat.id,True, 0)
+            await message.reply("I will clean old music messages from now.")
+        if input == "off":
+
+            add_clean_setting(message.chat.id,False, 0)
+            await message.reply("I will not clean old music messages from now.")
+        if not input == "on" and not input == "off":
+            await message.reply("I only understand by on or off")
+            return    
+ 
+    if input == "on":
+        rm_clean_setting(message.chat.id)      
+        add_clean_setting(message.chat.id,True, pvw)
+        await message.reply("I will clean old music messages from now.")
+    if input == "off":
+        rm_clean_setting(message.chat.id)
+        add_clean_setting(message.chat.id,False, pvw)
+        await message.reply("I will not clean old music messages from now.")
+    if not input == "on" and not input == "off":
+        await message.reply("I only understand by on or off")
+        return    
